@@ -197,9 +197,11 @@ class TC {
             b.result.rpm.textContent = '...';
             row.appendChild(b.result.tst);
             row.appendChild(b.result.rpm);
-        }
 
-        TC.recompute();
+            let den = document.createElement('td');
+            den.innerHTML = b.density;
+            row.appendChild(den);
+        }
 
         let list = document.getElementById('motors');
         for (const m of TC.motors) {
@@ -207,6 +209,9 @@ class TC {
             li.innerHTML = `<a href='javascript:TC.set_nm(${m.nm})'>Set to ${m.nm} Nm</a>: ${m.name} - <a href='${m.link}' target='_blank'>Source</a>`;
             list.appendChild(li);
         }
+        
+        TC.recompute();
+        TC.hz();
     }
 
     static set_nm(x) {
@@ -264,8 +269,10 @@ class TC {
         if (TC.active_hz !== null) {
             TC.active_hz.style.backgroundColor = null;
         }
-        TC.active_hz = el;
-        TC.active_hz.style.backgroundColor = '#ff6666';
+        if (el !== undefined) {
+            TC.active_hz = el;
+            TC.active_hz.style.backgroundColor = '#ff6666';
+        }
         let force_lbs = parseFloat(document.getElementById('hz_f_lbs').value);
         let d = parseFloat(document.getElementById('hz_density').value);
         let l = parseFloat(document.getElementById('hz_length').value);

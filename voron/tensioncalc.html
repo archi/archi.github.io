@@ -11,11 +11,23 @@
         </style>
    </head>
    <body onload='TC.init()'>
+       <!-- yes, i'm lazy and not that good with writing my own HTML + styling.
+            Still this should be more useful than some C++ program or perl script.
+            Hence: Deal with it :P
+
+            Improvements welcome.
+       -->
        <div style='width: 1000px'>
        <h3>On torque</h3>
        <p>
        The formula from the Gates documentation requires the torque load (Q) on the drive.
        This value can be computed from the toolhead weight, the gantry weight and acceleration - but that's not implemented, yet.
+       You can find the formula with context here; mind that the equation itself is equal for both GT2 and GT3, but of course there are different constants:
+       <ul>
+           <li>GT3: <a href='https://www.gates.com/content/dam/gates/home/knowledge-center/resource-library/catalogs/light-power-and-precision-manual.pdf'>Current GT3 manual (red), page 65</a></li>
+           <li>GT2: <a href='http://files.catalogds.com/domains/gates.pt/pdf/drivedesign_lightpower.pdf'>Old GT2 manual (blue), page 61</a></li>
+       </ul>
+       You can also find additional information in these documents, e.g. max torque ratings and a lot of other, useful engineering info.
        </p>
 
        <p>
@@ -41,17 +53,34 @@
 
        Word in the Monolith Discord is that a stock 2020 can be used with 6mm GT3 at recommeded spec, but not 9mm GT3.
        This means a tension of <i>20 lb</i> has <i>probably, maybe, possibly a chance</i> of not bending your extrusions.
-       No warranty though.
+
+       Or I remember wrong, and it's only 9mm GT2 at 12 lb.
+
+       I recommend you try to figure out how many lbs the stock gantry uses for 6mm GT2.
+       Just set density to 0.0083 and try to get to about 150 Hz.
+       You'll realize that's way below even 12 lb.
+
+       If you use any high tension values, be it from Monolith Discord, from this calculator, or whatever:
+       You're responsible.
        </p>
 
        <h3>Disclaimer</h3>
        <p>
-       Using these number could destroy your printer, or cause you to use a too loose belt.
+       Using these number could destroy your printer, or cause you to use a too loose belt and being unable to figure out why your print quality sucks.
+       
+       <b>Remember that a catastrophic failure due to material fatigue mid-print might start a fire and burn down your house.</b>
+       
        Either way, use them at your own risk.
 
        You have been warned!
        </p>
 
+       <p>
+       To see the calculator:
+       <input type='button' onclick='document.getElementById("hide").hidden = false;' value='Click here if you understand all of the above and will be careful. Anything that happens will be your own fault.'>
+       </p>
+
+       <div hidden id='hide'>
        <h3>Parameters</h3>
        <table>
            <tr>
@@ -101,23 +130,25 @@
                 <th>Recommended<br>by Monolith</th>
                 <th>Computed<br>(Formula 1)</th>
                 <th>Pulley rpm<br>(Only fyi, not used)</th>
+                <th>Belt density</th>
             </tr>
         </table>
         <p>
-        Click a marked tension value to get the Hz (only available for belts with known density).
+        Click a tension button to send it's exact value to the Hz conversion below (only available for belts with known density).<br>
+        From there you can also copy the exact value.
         </p>
         <hr>
         <h3>Force to Hz</h3>
         <table>
             <tr>
                 <td>Tension force</td>
-                <td><input type='text' id='hz_f_lbs'> in-lbs</td>
+                <td><input type='text' id='hz_f_lbs' value='3.8'> lbs</td>
             </tr><tr>
                 <td>Length</td>
-                <td><input type='text' id='hz_length'> mm</td>
+                <td><input type='text' id='hz_length' value='150'> mm</td>
             </tr><tr>
                 <td>Density</td>
-                <td><input type='text' id='hz_density'></td>
+                <td><input type='text' id='hz_density' value='0.0083'></td>
             </tr><tr>
                 <td><input type='button' value='Frequency:' onclick='TC.hz(this)'></td>
                 <td><span id='hz_out'>...</span> Hz</td>
@@ -148,6 +179,7 @@
         <br><br><br><br><br><br><br><br><br><br><br><br><br>
         &nbsp;
         </p>
+        </div>
     </div>
     </body>
 </html>
