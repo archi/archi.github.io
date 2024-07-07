@@ -1,0 +1,153 @@
+<html>
+    <head>
+        <title>Tension Calculator (Alpha)</title>
+        <script type='text/javascript' src='tensioncalc.js'>
+        </script>
+        <style type='text/css'>
+            #results
+                { border: 1px solid; border-collapse: collapse; }
+            #results td, #results th
+                { border: 1px solid; border-collapse: collapse; }
+        </style>
+   </head>
+   <body onload='TC.init()'>
+       <div style='width: 1000px'>
+       <h3>On torque</h3>
+       <p>
+       The formula from the Gates documentation requires the torque load (Q) on the drive.
+       This value can be computed from the toolhead weight, the gantry weight and acceleration - but that's not implemented, yet.
+       </p>
+
+       <p>
+       If you can not compute the actual torque:
+       As a safe upper bound, you can use your motor's holding torque.
+       The result will be too big and you will likely be able to get away with somewhat less tension.
+       However, as long as you don't overtension the belt, that doesn't matter.
+       </p>
+
+       <p>
+       Here is a list of motors with some torque ratings from their docs (linked):
+       <ul id='motors'>
+       </ul>
+       </p>
+       
+       <p>
+       <b>On overtensioning:</b>
+       There are two scenarios: It's likely that your frame or printed parts are not able to take the force excerted on them.
+       As a result, there is a risk of bending your frame or cracking parts.
+
+       Theoretically, your belt could elongate or even snap.
+       I think the previous scenario is more likely, but if you run a 4040 frame and use 4mm GT2 belts, this could happen.
+
+       Word in the Monolith Discord is that a stock 2020 can be used with 6mm GT3 at recommeded spec, but not 9mm GT3.
+       This means a tension of <i>20 lb</i> has <i>probably, maybe, possibly a chance</i> of not bending your extrusions.
+       No warranty though.
+       </p>
+
+       <h3>Disclaimer</h3>
+       <p>
+       Using these number could destroy your printer, or cause you to use a too loose belt.
+       Either way, use them at your own risk.
+
+       You have been warned!
+       </p>
+
+       <h3>Parameters</h3>
+       <table>
+           <tr>
+               <td>Design torque:</td>
+               <td><input type='text' id='t_hold' value='0.5'> Nm</td>
+           </tr><tr>
+               <td>Belt speed:</td>
+               <td><input type='text' id='v_belt' value='1000'> mm/s</td>
+           </tr><tr>
+               <td>Drive types:</td>
+               <td>
+                   <select id='n_drives'>
+                       <option value='2'>4WD/AWD</option>
+                       <option value='1'>2WD</option>
+                   </select>
+               </td>
+           </tr><tr>
+               <td>Pulleys:</td>
+               <td>
+                   <select id='n_pulley'>
+                       <option value='24'>24T</option>
+                       <option value='20' selected>20T (Monolith)</option>
+                       <option value='16'>16T</option>
+                   </select>
+               </td>
+           </tr>
+        </table>
+        <input type='button' onclick='TC.recompute()' value='Recompute'>
+        <hr>
+        <h3>Intermediates</h3>
+        <table>
+            <tr>
+                <td>Total torque</td>
+                <td><span id='i_t_total'>...</span> lb-in</td>
+            </tr><tr>
+                <td>Belt speed</td>
+                <td><span id='i_v_belt'>...</span> f/min</td>
+            </tr>
+        </table>
+        <hr>
+        <h3>Results</h3>
+        <table id='results'>
+            <tr>
+                <th>Belt</th>
+                <th>Minimum<br>(Light load)</th>
+                <th>Experimental Range<br>(Gates, Table 8)</th>
+                <th>Recommended<br>by Monolith</th>
+                <th>Computed<br>(Formula 1)</th>
+                <th>Pulley rpm<br>(Only fyi, not used)</th>
+            </tr>
+        </table>
+        <p>
+        Click a marked tension value to get the Hz (only available for belts with known density).
+        </p>
+        <hr>
+        <h3>Force to Hz</h3>
+        <table>
+            <tr>
+                <td>Tension force</td>
+                <td><input type='text' id='hz_f_lbs'> in-lbs</td>
+            </tr><tr>
+                <td>Length</td>
+                <td><input type='text' id='hz_length'> mm</td>
+            </tr><tr>
+                <td>Density</td>
+                <td><input type='text' id='hz_density'></td>
+            </tr><tr>
+                <td><input type='button' value='Frequency:' onclick='TC.hz(this)'></td>
+                <td><span id='hz_out'>...</span> Hz</td>
+            </tr>
+        </table>
+        <hr>
+        <h3>Observations</h3>
+        <p>
+        If you made it here, you might realize that the tension computed from the formula is nearly the same for GT2 and GT3, and for the belt width.
+        </p>
+
+        <p>
+        This is no mistake in the calculator:
+        The dominant factor in the formula is <i>1.21 * Q / d</i>.
+        The torque load <i>Q</i> depends on your motor (that's what you input above).
+        And the diameter <i>d</i> of the pulley depends on the belt pitch, but not on the belt width.
+        </p>
+
+        <p>
+        The formula has a second term <i>M * S²</i>.
+        The mass factor <i>M</i> depends on the belt's mass and is actually dependend on the belt width; but the numbers are small here (0.039 to 0.117).
+        And the speed <i>S</i> is the belt speed divided by 1000 (in ft per minute).
+        So at 1000 mm/s (or 196.85 ft per minute) we will have something like <i>S = 0.2</i>, and <i>S² = 0.04</i>.
+        As a result, this can be virtually ignored (but the computation of course includes it).
+        </p>
+        
+        <p>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br>
+        &nbsp;
+        </p>
+    </div>
+    </body>
+</html>
