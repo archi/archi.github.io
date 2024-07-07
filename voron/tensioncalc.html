@@ -11,102 +11,119 @@
         </style>
    </head>
    <body onload='TC.init()'>
-       <!-- yes, i'm lazy and not that good with writing my own HTML + styling.
-            Still this should be more useful than some C++ program or perl script.
-            Hence: Deal with it :P
+        <!-- yes, i'm lazy and not that good with writing my own HTML + styling.
+             Still this should be more useful than some C++ program or perl script.
+             Hence: Deal with it :P
+ 
+             Improvements welcome.
+        -->
+        <div style='width: 1000px'>
+        <h3>On torque</h3>
+        <p>
+        The formula from the Gates documentation requires the torque load (Q) on the drive.
+        This value can be computed from the toolhead weight, the gantry weight and acceleration - but that's not implemented, yet.
+        You can find the formula with context here; mind that the equation itself is equal for both GT2 and GT3, but of course there are different constants:
+        <ul>
+            <li>GT3: <a href='https://www.gates.com/content/dam/gates/home/knowledge-center/resource-library/catalogs/light-power-and-precision-manual.pdf'>Current GT3 manual (red), page 65</a></li>
+            <li>GT2: <a href='http://files.catalogds.com/domains/gates.pt/pdf/drivedesign_lightpower.pdf'>Old GT2 manual (blue), page 61</a></li>
+        </ul>
+        You can also find additional information in these documents, e.g. max torque ratings and a lot of other, useful engineering info.
+        </p>
 
-            Improvements welcome.
-       -->
-       <div style='width: 1000px'>
-       <h3>On torque</h3>
-       <p>
-       The formula from the Gates documentation requires the torque load (Q) on the drive.
-       This value can be computed from the toolhead weight, the gantry weight and acceleration - but that's not implemented, yet.
-       You can find the formula with context here; mind that the equation itself is equal for both GT2 and GT3, but of course there are different constants:
-       <ul>
-           <li>GT3: <a href='https://www.gates.com/content/dam/gates/home/knowledge-center/resource-library/catalogs/light-power-and-precision-manual.pdf'>Current GT3 manual (red), page 65</a></li>
-           <li>GT2: <a href='http://files.catalogds.com/domains/gates.pt/pdf/drivedesign_lightpower.pdf'>Old GT2 manual (blue), page 61</a></li>
-       </ul>
-       You can also find additional information in these documents, e.g. max torque ratings and a lot of other, useful engineering info.
-       </p>
+        <p>
+        If you can not compute the actual torque:
+        As a safe upper bound, you can use your motor's holding torque.
+        The result will be too big and you will likely be able to get away with somewhat less tension.
+        However, as long as you don't overtension the belt, that doesn't matter.
+        </p>
 
-       <p>
-       If you can not compute the actual torque:
-       As a safe upper bound, you can use your motor's holding torque.
-       The result will be too big and you will likely be able to get away with somewhat less tension.
-       However, as long as you don't overtension the belt, that doesn't matter.
-       </p>
-
-       <p>
-       Here is a list of motors with some torque ratings from their docs (linked):
-       <ul id='motors'>
-       </ul>
-       </p>
+        <p>
+        Here is a list of motors with some torque ratings from their docs (linked):
+        <ul id='motors'>
+        </ul>
+        </p>
        
-       <p>
-       <b>On overtensioning:</b>
-       There are two scenarios: It's likely that your frame or printed parts are not able to take the force excerted on them.
-       As a result, there is a risk of bending your frame or cracking parts.
+        <p>
+        <b>On overtensioning:</b>
+        There are two scenarios: It's likely that your frame or printed parts are not able to take the force excerted on them.
+        As a result, there is a risk of bending your frame or cracking parts.
+        </p>
 
-       Theoretically, your belt could elongate or even snap.
-       I think the previous scenario is more likely, but if you run a 4040 frame and use 4mm GT2 belts, this could happen.
+        <p>
+        Theoretically, your belt could elongate or even snap.
+        I think the previous scenario is more likely, but if you run a 4040 frame and use 4mm GT2 belts, this could happen.
+        </p>
 
-       Word in the Monolith Discord is that a stock 2020 can be used with 6mm GT3 at recommeded spec, but not 9mm GT3.
-       This means a tension of <i>20 lb</i> has <i>probably, maybe, possibly a chance</i> of not bending your extrusions.
+        <p>
+        Word in the Monolith Discord is that a stock 2020 can be used with 6mm GT3 at recommeded spec, but not 9mm GT3.
+        This means a tension of <i>20 lb</i> has <i>probably, maybe, possibly a chance</i> of not bending your extrusions.
+        </p>
 
-       Or I remember wrong, and it's only 9mm GT2 at 12 lb.
+        <p>
+        Or I remember wrong, and it's only 9mm GT2 at 12 lb.
+        </p>
 
-       I recommend you try to figure out how many lbs the stock gantry uses for 6mm GT2.
-       Just set density to 0.0083 and try to get to about 150 Hz.
-       You'll realize that's way below even 12 lb.
+        <p>
+        Another important factor is the maximum load on the shaft: A stepper's 5mm shaft can only take a low force.
+        I found numbers of about 4.4 lb (that's the unit used below), or 20 N.
+        Anything above that will destroy your stepper motor.
+        <b>That's why there is all the talk of double shear</b>.
+        </p>
 
-       If you use any high tension values, be it from Monolith Discord, from this calculator, or whatever:
-       You're responsible.
-       </p>
+        <p>
+        I recommend you try to figure out how many lbs the stock gantry uses for 6mm GT2.
+        Just set density to 0.0083 and try to get to about 150 Hz.
+        You'll realize that's way below even 12 lb.
+        </p>
 
-       <h3>Disclaimer</h3>
-       <p>
-       Using these number could destroy your printer, or cause you to use a too loose belt and being unable to figure out why your print quality sucks.
+        <p>
+        If you use any high tension values, be it from Monolith Discord, from this calculator, or whatever:
+        You're responsible.
+        </p>
+
+        <h3>Disclaimer</h3>
+        <p>
+        Using these number could destroy your printer, or cause you to use a too loose belt and being unable to figure out why your print quality sucks.
        
-       <b>Remember that a catastrophic failure due to material fatigue mid-print might start a fire and burn down your house.</b>
+        <b>Remember that a catastrophic failure due to material fatigue mid-print might start a fire and burn down your house.</b>
        
-       Either way, use them at your own risk.
+        Either way, use them at your own risk.
 
-       You have been warned!
-       </p>
+        You have been warned!
+        </p>
 
-       <p>
-       To see the calculator:
-       <input type='button' onclick='document.getElementById("hide").hidden = false;' value='Click here if you understand all of the above and will be careful. Anything that happens will be your own fault.'>
-       </p>
+        <p>
+        To see the calculator:
+        <input type='button' onclick='document.getElementById("hide").hidden = false;' value='Click here if you understand all of the above and will be careful. Anything that happens will be your own fault.'>
+        </p>
 
-       <div hidden id='hide'>
-       <h3>Parameters</h3>
-       <table>
-           <tr>
-               <td>Design torque:</td>
-               <td><input type='text' id='t_hold' value='0.5'> Nm</td>
-           </tr><tr>
-               <td>Belt speed:</td>
-               <td><input type='text' id='v_belt' value='1000'> mm/s</td>
-           </tr><tr>
-               <td>Drive types:</td>
-               <td>
-                   <select id='n_drives'>
-                       <option value='2'>4WD/AWD</option>
-                       <option value='1'>2WD</option>
-                   </select>
-               </td>
-           </tr><tr>
-               <td>Pulleys:</td>
-               <td>
-                   <select id='n_pulley'>
-                       <option value='24'>24T</option>
-                       <option value='20' selected>20T (Monolith)</option>
-                       <option value='16'>16T</option>
-                   </select>
-               </td>
-           </tr>
+        <div hidden id='hide'>
+        <h3>Parameters</h3>
+        <table>
+            <tr>
+                <td>Design torque:</td>
+                <td><input type='text' id='t_hold' value='0.5'> Nm</td>
+            </tr><tr>
+                <td>Belt speed:</td>
+                <td><input type='text' id='v_belt' value='1000'> mm/s</td>
+            </tr><tr>
+                <td>Drive types:</td>
+                <td>
+                    <select id='n_drives'>
+                        <option value='2'>4WD/AWD</option>
+                        <option value='1'>2WD</option>
+                    </select>
+                </td>
+            </tr><tr>
+                <td>Pulleys:</td>
+                <td>
+                    <select id='n_pulley'>
+                        <option value='24'>24T</option>
+                        <option value='20' selected>20T (Monolith)</option>
+                        <option value='16'>16T</option>
+                    </select>
+                </td>
+            </tr>
         </table>
         <input type='button' onclick='TC.recompute()' value='Recompute'>
         <hr>
