@@ -38,6 +38,11 @@ class TC {
             link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
         },
         {
+            name: "Moons MS17HD6P4200 (e.g. MPX), <b>1000 RPM</b> torque (2A/36V)",
+            nm: 0.2943,
+            link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
+        },
+        {
             name: "Moons MS17HD6P4200 (e.g. MPX), <b>1500 RPM</b> torque (2A/36V)",
             nm: 0.2146,
             link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
@@ -203,12 +208,23 @@ class TC {
                 f_belt: document.createElement('td'),
                 a_x_max: document.createElement('td'),
                 a_y_max: document.createElement('td'),
+
+                h_a_boost: document.createElement('td'),
+                h_rpm: document.createElement('td'),
+                h_tst: document.createElement('td'),
             };
             b.result.tst.textContent = '...';
             b.result.rpm.textContent = '...';
             b.result.f_belt.textContent = '...';
             b.result.a_x_max.textContent = '...';
             b.result.a_y_max.textContent = '...';
+            b.result.h_a_boost.textContent = '...';
+            b.result.h_rpm.textContent = '...';
+            b.result.h_tst.textContent = '...';
+            b.result.h_a_boost.classList.add('hybrid');
+            b.result.h_rpm.classList.add('hybrid');
+            b.result.h_tst.classList.add('hybrid');
+            
             row.appendChild(b.result.tst);
             row.appendChild(b.result.rpm);
 
@@ -219,6 +235,10 @@ class TC {
             row.appendChild(b.result.f_belt);
             row.appendChild(b.result.a_x_max);
             row.appendChild(b.result.a_y_max);
+            
+            row.appendChild(b.result.h_a_boost);
+            row.appendChild(b.result.h_rpm);
+            row.appendChild(b.result.h_tst);
         }
 
         let list = document.getElementById('motors');
@@ -233,12 +253,12 @@ class TC {
     }
 
     static set_nm(x) {
-        document.getElementById('t_hold').value = x;
+        document.getElementById('t_motor').value = x;
         TC.recompute();
     }
 
     static recompute() {
-        let t_1motor_Nm = parseFloat(document.getElementById('t_hold').value);
+        let t_1motor_Nm = parseFloat(document.getElementById('t_motor').value);
         let t_1motor_inlbs = t_1motor_Nm * TC.conv_inlb_Nm;
         let v_belt_fpm = parseFloat(document.getElementById('v_belt').value) / 1000 * TC.conv_fpm_ms;
         let n_drives = parseFloat(document.getElementById('n_drives').value);
@@ -251,6 +271,14 @@ class TC {
         let t_total_inlbs = n_drives * t_1motor_inlbs;
         document.getElementById('i_t_total').textContent = TC.round(t_total_inlbs, 1000);
         document.getElementById('i_v_belt').textContent = TC.round(v_belt_fpm, 1000);
+        document.getElementById('i_v_th').textContent = TC.round(v_belt_fpm / Math.sqrt(2) / TC.conv_fpm_ms * 1000);
+
+        // hybrid values
+        let t_hybrid_1motor_Nm = parseFloat(document.getElementById('t_hmotor').value);
+        let t_hybrid_1motor_inlbs = t_hybrid_1motor_Nm * TC.conv_inlb_Nm;
+        let n_hybrid_drives = parseFloat(document.getElementById('n_hdrives').value);
+        let n_hybrid_pulley = parseFloat(document.getElementById('n_hpulley').value);
+        let t_hybrid_total_inlbs = n_hybrid_drives * t_hybrid_1motor_inlbs;
 
         // accelerated mass (ex belt).
         // we have two accelerations: x and y
@@ -278,13 +306,34 @@ class TC {
             let f_belt_N = t_1motor_Nm * n_drives / (pd_in * TC.conv_in_m / 2);
             b.result.f_belt.textContent = TC.round(f_belt_N);
 
+            // TODO I am not sure here: Is the force distributed evenly on both components (divide by two), or do we divide by sqrt(2) due to the angles?
             let m_belt_kg = l_belt_m * b.density;
             let a_x_ms2 = f_belt_N / (m_x_kg + m_belt_kg) / 2;
             let a_y_ms2 = f_belt_N / (m_y_kg + m_belt_kg) / 2;
             b.result.a_x_max.textContent = TC.round(a_x_ms2);
             b.result.a_y_max.textContent = TC.round(a_y_ms2);
+
+            // hybrid values
+            let hpd_in = b.pd[n_hybrid_pulley];
+
+            // divide the second half by two: the belt is moving at 1/sqrt(2) [which is 1/2 when squared]
+            let htst = 1.21 * t_hybrid_total_inlbs / hpd_in
+                + (b.mass_factor * (v_belt_fpm / 1000) * (v_belt_fpm / 1000) / 2);
+            let hrpm = v_belt_fpm * 3.820 / hpd_in / Math.sqrt(2);
+            let hf_belt_N = t_hybrid_1motor_Nm * n_hybrid_drives / (hpd_in * TC.conv_in_m / 2);
+
+            // the 1/2 is just an estimate on for the belt weight
+            let ha_y_ms2 = hf_belt_N / (m_y_kg + 1/2 * m_belt_kg);
+
+            b.result.h_a_boost.textContent = TC.round(ha_y_ms2);
+            b.result.h_rpm.textContent = TC.round(hrpm);
+            b.result.h_tst.innerHTML = TC.mk_set_hz(b, htst);
         }
+
         console.log("recompute()");
+        TC.hybridShowHide();
+
+        document.styleSheets[0].cssRules[0].style.display = n_hybrid_drives == 0 ? 'none' : null;
     }
 
     static active_hz = null;
@@ -292,6 +341,10 @@ class TC {
     static mk_set_hz (b, force) {
         if (force == '-') {
             return force;
+        }
+
+        if (force < b.minimum_tst) {
+            force = b.minimum_tst;
         }
 
         let rforce = TC.round(force, 10);
@@ -322,6 +375,12 @@ class TC {
         let force = TC.conv_lb_N * force_lbs; 
         let f = 1 / 2 / l * Math.sqrt(force / d) * 1000;
         document.getElementById('hz_out').textContent = TC.round(f, 10);
+    }
+
+    static hybridShowHide () {
+        let n = parseFloat(document.getElementById('n_hdrives').value);
+        document.getElementById('hybridTorqueRow').hidden = n == 0;
+        document.getElementById('hybridPulleyRow').hidden = n == 0;
     }
 }
 

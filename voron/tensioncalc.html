@@ -3,7 +3,12 @@
         <title>Tension Calculator (Alpha)</title>
         <script type='text/javascript' src='tensioncalc.js'>
         </script>
+        <!-- keep the .hybrid style at the top (it altered by JS using its index) -->
         <style type='text/css'>
+            .hybrid
+                { display: none; }
+            th.hybrid
+                { background-color: yellow; }
             #results
                 { border: 1px solid; border-collapse: collapse; }
             #results td, #results th
@@ -128,17 +133,19 @@
         <h3>Parameters</h3>
         <table>
             <tr>
-                <td>Per motor max torque:</td>
-                <td><input type='text' id='t_hold' value='0.3'> Nm</td>
+                <td>CoreXY motor torque:</td>
+                <td><input type='text' id='t_motor' value='0.3'> Nm</td>
             </tr><tr>
                 <td>Belt speed:</td>
                 <td><input type='text' id='v_belt' value='1000'> mm/s</td>
             </tr><tr>
-                <td>Drive types:</td>
+                <td colspan=2 style='text-size: -2'><i>When adjusting belt speeds, adjust the torque, too!</i></td>
+            </tr><tr>
+                <td>Drive type:</td>
                 <td>
                     <select id='n_drives'>
-                        <option value='2'>4WD/AWD</option>
-                        <option value='1'>2WD</option>
+                        <option value='1'>2WD (Stock)</option>
+                        <option value='2' selected>4WD/AWD (Monolith)</option>
                     </select>
                 </td>
             </tr><tr>
@@ -154,14 +161,32 @@
                 <td>Toolhead Weight:</td>
                 <td><input type='text' id='m_th' value='500'> g</td>
             </tr><tr>
-            </tr><tr>
                 <td>Y-axis weight, without toolhead:</td>
                 <td><input type='text' id='m_axis' value='750'> g</td>
-            </tr><tr>
             </tr><tr>
                 <td>Belt length:</td>
                 <td><input type='text' id='l_belt' value='1850'> mm</td>
             </tr><tr>
+                <td>Hybrid type:</td>
+                <td>
+                    <select id='n_hdrives' onchange='TC.hybridShowHide()'>
+                        <option value='0' selected>No Hybrid (Stock)</option>
+                        <option value='1'>One stepper per Y rail</option>
+                        <option value='2'>Two steppers per Y rail</option>
+                    </select>
+                </td>
+            </tr><tr hidden id='hybridTorqueRow'>
+                <td>Hybrid motor torque:</td>
+                <td><input type='text' id='t_hmotor' value='0.3'> Nm</td>
+            </tr><tr hidden id='hybridPulleyRow'>
+                <td>Pulleys:</td>
+                <td>
+                    <select id='n_hpulley'>
+                        <option value='24'>24T</option>
+                        <option value='20' selected>20T</option>
+                        <option value='16'>16T</option>
+                    </select>
+                </td>
             </tr>
         </table>
         <input type='button' onclick='TC.recompute()' value='Recompute'>
@@ -174,6 +199,10 @@
             </tr><tr>
                 <td>Belt speed</td>
                 <td><span id='i_v_belt'>...</span> f/min</td>
+            </tr><tr>
+                <td>Diagonal travel speed</td>
+                <td><span id='i_v_th'>...</span> mm/s</td>
+            </tr>
             </tr>
         </table>
         <hr>
@@ -181,19 +210,22 @@
         <table id='results'>
             <tr>
                 <th>Belt</th>
-                <th><span>Minimum (Light load) [lbs]</span></th>
-                <th><span>Experimental Range [lbs]<br>(Gates, Table 8)</span></th>
-                <th><span>Recommended [lbs]<br>by Monolith</span></th>
-                <th><span>Computed [lbs]<br>(Formula 1)</span></th>
-                <th><span>Pulley rpm [1/s]<br>(Only fyi, not used)</span></th>
-                <th><span>Belt density [kg/m]</span></th>
-                <th><span>Max force on belt [N]<br>(From motors)</span></th>
-                <th><span>Max accel X [m/s²]</span></th>
-                <th><span>Max accel Y [m/s²]</span></th>
+                <th style='background-color: #aaffaa'><span>Minimum Tension[lbs]<br>(From Gates)</span></th>
+                <th style='background-color: #aaffaa'><span>Tension:<br>Experimental Range [lbs]<br>(From Gates, Table 8)</span></th>
+                <th style='background-color: #66ff66'><span>Recommended [lbs]<br>by Monolith</span></th>
+                <th style='background-color: #ff6666'><span>Computed [lbs]<br>(Formula 1)</span></th>
+                <th style='background-color: #ffaaff'><span>Pulley rpm [1/s]<br>(Only fyi, not used)</span></th>
+                <th style='background-color: #ffaaff'><span>Belt density [kg/m]</span></th>
+                <th style='background-color: #ffaaff'><span>Max force on belt [N]<br>(From motors)</span></th>
+                <th style='background-color: #ffaaaa'><span>Max accel X [m/s²]</span></th>
+                <th style='background-color: #ffaaaa'><span>Max accel Y [m/s²]</span></th>
+                <th class='hybrid'><span>Hybrid<br>Max boost accel [m/s²]</span></th>
+                <th class='hybrid'><span>Hybrid<br>Pulley rpm [1/s]</span></th>
+                <th class='hybrid'><span>Hybrid<br>Computed [lbs]</span></th>
             </tr>
         </table>
         <p>
-        Click a tension button to send it's exact value to the Hz conversion below (only available for belts with known density).<br>
+        Click a tension button to send its exact value to the Hz conversion below (only available for belts with known density).<br>
         From there you can also copy the exact value.
         </p>
         <hr>
@@ -223,7 +255,7 @@
         This is no mistake in the calculator:
         The dominant factor in the formula is <i>1.21 * Q / d</i>.
         The torque load <i>Q</i> depends on your motor (that's what you input above).
-        And the diameter <i>d</i> of the pulley depends on the belt pitch, but not on the belt width.
+        And the diameter <i>d</i> of the pulffy depends on the belt pitch, but not on the belt width.
         </p>
 
         <p>
@@ -233,12 +265,13 @@
         So at 1000 mm/s (or 196.85 ft per minute) we will have something like <i>S = 0.2</i>, and <i>S² = 0.04</i>.
         As a result, this can be virtually ignored (but the computation of course includes it).
         </p>
+        </div>
+
         
         <p>
         <br><br><br><br><br><br><br><br><br><br><br><br><br>
         &nbsp;
         </p>
-        </div>
     </div>
     </body>
 </html>
