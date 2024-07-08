@@ -271,7 +271,7 @@ class TC {
         let t_total_inlbs = n_drives * t_1motor_inlbs;
         document.getElementById('i_t_total').textContent = TC.round(t_total_inlbs, 1000);
         document.getElementById('i_v_belt').textContent = TC.round(v_belt_fpm, 1000);
-        document.getElementById('i_v_th').textContent = TC.round(v_belt_fpm / Math.sqrt(2) / TC.conv_fpm_ms * 1000);
+        document.getElementById('i_v_th').textContent = TC.round(v_belt_fpm * Math.sqrt(2) / TC.conv_fpm_ms * 1000);
 
         // hybrid values
         let t_hybrid_1motor_Nm = parseFloat(document.getElementById('t_hmotor').value);
