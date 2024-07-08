@@ -13,6 +13,9 @@ class TC {
     // 1 m/s = 196.85 f/s
     static conv_fpm_ms = 196.85;
 
+    // 1 in = 2.54cm / 100 [m]
+    static conv_in_m = 2.54 / 100;
+
     static motors = [
         {
             name: "Moons MS17HD6P4200 (e.g. MPX), holding torque (2A?)",
@@ -40,7 +43,7 @@ class TC {
             link: 'https://www.omc-stepperonline.com/nema-17-high-temp-stepper-motor-55ncm-77-93oz-in-55mm-round-shaft-insulation-class-h-180c-17hs19-2504s-h-v1'
         },
         {
-            name: "LDO 42STH48-2804AH (2.8A)",
+            name: "LDO 42STH48-2804AH, holding torque (2.8A)",
             nm: 0.420,
             link: 'https://west3d.com/en-de/products/ldo-motors-42sth48-2804ah-super-speedy-super-power-high-temp-nema-17-stepper-motor-high-performance-high-temperature'
         },
@@ -56,18 +59,18 @@ class TC {
         },
     ]
 
-    static round(x, i = 10000) {
+    static round(x, i = 10) {
         return Math.round(x * i) / i;
     }
 
-    // [GT3] page 73
+    // [GT3] page 18
     static pd_2mgt_gt3 = {
         "24": 0.602,
         "20": 0.501,
         "16": 0.401,
     }
     
-    // [GT3] page 74
+    // [GT3] page 18
     static pd_3mgt_gt3 = {
         "24": 0.902,
         "20": 0.752,
@@ -192,15 +195,25 @@ class TC {
             b.result = {
                 tst: document.createElement('td'),
                 rpm: document.createElement('td'),
+                f_belt: document.createElement('td'),
+                a_x_max: document.createElement('td'),
+                a_y_max: document.createElement('td'),
             };
             b.result.tst.textContent = '...';
             b.result.rpm.textContent = '...';
+            b.result.f_belt.textContent = '...';
+            b.result.a_x_max.textContent = '...';
+            b.result.a_y_max.textContent = '...';
             row.appendChild(b.result.tst);
             row.appendChild(b.result.rpm);
 
             let den = document.createElement('td');
             den.innerHTML = b.density;
             row.appendChild(den);
+
+            row.appendChild(b.result.f_belt);
+            row.appendChild(b.result.a_x_max);
+            row.appendChild(b.result.a_y_max);
         }
 
         let list = document.getElementById('motors');
@@ -220,15 +233,29 @@ class TC {
     }
 
     static recompute() {
-        let t_hold_inlbs = parseFloat(document.getElementById('t_hold').value) * TC.conv_inlb_Nm;
+        let t_1motor_Nm = parseFloat(document.getElementById('t_hold').value);
+        let t_1motor_inlbs = t_1motor_Nm * TC.conv_inlb_Nm;
         let v_belt_fpm = parseFloat(document.getElementById('v_belt').value) / 1000 * TC.conv_fpm_ms;
         let n_drives = parseFloat(document.getElementById('n_drives').value);
-        let n_pulley = document.getElementById('n_pulley').value;
+        let n_pulley = parseFloat(document.getElementById('n_pulley').value);
+        let l_belt_m = parseFloat(document.getElementById('l_belt').value) / 1000;
+        let m_th_kg = parseFloat(document.getElementById('m_th').value) / 1000;
+        let m_axis_kg = parseFloat(document.getElementById('m_axis').value) / 1000;
         
         // the worst case torque is the holding torque of the drives
-        let t_total_inlbs = n_drives * t_hold_inlbs;
-        document.getElementById('i_t_total').textContent = TC.round(t_total_inlbs);
-        document.getElementById('i_v_belt').textContent = TC.round(v_belt_fpm);
+        let t_total_inlbs = n_drives * t_1motor_inlbs;
+        document.getElementById('i_t_total').textContent = TC.round(t_total_inlbs, 1000);
+        document.getElementById('i_v_belt').textContent = TC.round(v_belt_fpm, 1000);
+
+        // accelerated mass (ex belt).
+        // we have two accelerations: x and y
+        // the toolhead is accelerated along x and y
+        // the gantry only y
+        // two things I do not know:
+        //  1. I am not sure how the forces are distributed, so just assume half/half
+        //  2. The belt also needs to be accelerated; no idea where it goes, so just add it to both to be safe
+        let m_x_kg = m_th_kg;
+        let m_y_kg = m_th_kg + m_axis_kg;
 
         for (const b of TC.belts) {
             let pd_in = b.pd[n_pulley];
@@ -241,6 +268,16 @@ class TC {
             // informative: compute pulley rpm:
             let rpm = v_belt_fpm * 3.820 / pd_in;
             b.result.rpm.textContent = Math.round(rpm);
+        
+            // compute forces + accel
+            let f_belt_N = t_1motor_Nm * n_drives / (pd_in * TC.conv_in_m / 2);
+            b.result.f_belt.textContent = TC.round(f_belt_N);
+
+            let m_belt_kg = l_belt_m * b.density;
+            let a_x_ms2 = f_belt_N / (m_x_kg + m_belt_kg) / 2;
+            let a_y_ms2 = f_belt_N / (m_y_kg + m_belt_kg) / 2;
+            b.result.a_x_max.textContent = TC.round(a_x_ms2);
+            b.result.a_y_max.textContent = TC.round(a_y_ms2);
         }
         console.log("recompute()");
     }

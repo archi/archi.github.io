@@ -8,6 +8,10 @@
                 { border: 1px solid; border-collapse: collapse; }
             #results td, #results th
                 { border: 1px solid; border-collapse: collapse; }
+            #results th
+                { vertical-align: bottom; text-align: center; min-width:60px; }
+            #results th span
+                { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
         </style>
    </head>
    <body onload='TC.init()'>
@@ -27,11 +31,12 @@
             <li>GT3: <a href='https://www.gates.com/content/dam/gates/home/knowledge-center/resource-library/catalogs/light-power-and-precision-manual.pdf'>Current GT3 manual (red), page 65</a></li>
             <li>GT2: <a href='http://files.catalogds.com/domains/gates.pt/pdf/drivedesign_lightpower.pdf'>Old GT2 manual (blue), page 61</a></li>
         </ul>
-        You can also find additional information in these documents, e.g. max torque ratings and a lot of other, useful engineering info.
+        You can also find additional information in these documents, e.g. max torque ratings and a lot of other, useful engineering info.<br>
+        With GT3 you can essentially ignore torque ratings in this applications; for GT2 torques below 0.25 Nm (2WD!) are safe, above that consult the GT2 docs.
         </p>
 
         <p>
-        If you can not compute the actual torque:
+        If you can not compute/measure the actual torque of your motors:
         As a safe upper bound, you can use your motor's holding torque.
         The result will be too big and you will likely be able to get away with somewhat less tension.
         However, as long as you don't overtension the belt, that doesn't matter.
@@ -81,6 +86,24 @@
         You're responsible.
         </p>
 
+        <p>
+        <b>Accelerations and weights:</b> I try to compute max accelerations from the given torque.
+        The result is the absolute limit of what the system can do, and you will very likely not reach those values (I simplified a few things, most importantly I ignore friciton and rail preload).<br>
+        For these computations I need the moved mass.
+        The default values are a bad estimate for stock 350mm.<br>
+        The weight of the belt is included into my model, but no friction on tensioners (you may add some weight to the toolhead to compensate for that).<br>
+        Stealthburner is about 500g (including a 56g MGN12H carriage), but you probably have a different toolhead.<br>
+        For the y-assembly: 2020 extrusion are 500g/m, MGN12 rails are 650g/m and MGN9 rail carriages are 26g each. Don't forget the XY joints and steel screws!<br>
+        <br>
+        Mind that decelerations happen at high rpms, so your motor will have a different torque for those!<br>
+        By default, Klipper sets the deceleration limit to half the acceleration; as you will see, you might want to tune that a little bit.
+        </p>
+        <p>
+        <b>Why should you care for the max accels I produce?</b>
+        They show what's possible with the given torque/force transfer capability of your system.
+        If you run 40m/s² accelerations anyway on a system that can do 80m/s², you'll only be using a fraction of the torque - meaning you get away with less tension.
+        </p>
+
         <h3>Disclaimer</h3>
         <p>
         Using these number could destroy your printer, or cause you to use a too loose belt and being unable to figure out why your print quality sucks.
@@ -123,6 +146,18 @@
                         <option value='16'>16T</option>
                     </select>
                 </td>
+            </tr><tr>
+                <td>Toolhead Weight:</td>
+                <td><input type='text' id='m_th' value='500'> g</td>
+            </tr><tr>
+            </tr><tr>
+                <td>Y-axis weight, without toolhead:</td>
+                <td><input type='text' id='m_axis' value='750'> g</td>
+            </tr><tr>
+            </tr><tr>
+                <td>Belt length:</td>
+                <td><input type='text' id='l_belt' value='1850'> mm</td>
+            </tr><tr>
             </tr>
         </table>
         <input type='button' onclick='TC.recompute()' value='Recompute'>
@@ -142,12 +177,15 @@
         <table id='results'>
             <tr>
                 <th>Belt</th>
-                <th>Minimum<br>(Light load)</th>
-                <th>Experimental Range<br>(Gates, Table 8)</th>
-                <th>Recommended<br>by Monolith</th>
-                <th>Computed<br>(Formula 1)</th>
-                <th>Pulley rpm<br>(Only fyi, not used)</th>
-                <th>Belt density</th>
+                <th><span>Minimum (Light load) [lbs]</span></th>
+                <th><span>Experimental Range [lbs]<br>(Gates, Table 8)</span></th>
+                <th><span>Recommended [lbs]<br>by Monolith</span></th>
+                <th><span>Computed [lbs]<br>(Formula 1)</span></th>
+                <th><span>Pulley rpm [1/s]<br>(Only fyi, not used)</span></th>
+                <th><span>Belt density [kg/m]</span></th>
+                <th><span>Max force on belt [N]<br>(From motors)</span></th>
+                <th><span>Max accel X [m/s²]</span></th>
+                <th><span>Max accel Y [m/s²]</span></th>
             </tr>
         </table>
         <p>
