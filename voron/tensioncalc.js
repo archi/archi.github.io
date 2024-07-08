@@ -23,17 +23,22 @@ class TC {
             link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
         },
         {
-            name: "Moons MS17HD6P4200 (e.g. MPX), 50 RPM torque (2A)",
-            nm: 0.4819,
-            link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
-        },
-        {
             name: "Moons MS17HD6P4200 (e.g. MPX), 50 RPM torque (1.5A)",
             nm: 0.3841,
             link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
         },
         {
-            name: "Moons MS17HD6P4200 (e.g. MPX), 1500 RPM torque (2A/36V)",
+            name: "Moons MS17HD6P4200 (e.g. MPX), <b>50 RPM</b> torque (2A/36V)",
+            nm: 0.4819,
+            link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
+        },
+        {
+            name: "Moons MS17HD6P4200 (e.g. MPX), <b>750 RPM</b> torque (2A/36V)",
+            nm: 0.3604,
+            link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
+        },
+        {
+            name: "Moons MS17HD6P4200 (e.g. MPX), <b>1500 RPM</b> torque (2A/36V)",
             nm: 0.2146,
             link: 'https://www.moonsindustries.com/p/nema-17-standard-hybrid-stepper-motors/ms17hd6p4200-000004611110008905'
         },
